@@ -1,0 +1,1 @@
+# batoid-rmax-scaling
