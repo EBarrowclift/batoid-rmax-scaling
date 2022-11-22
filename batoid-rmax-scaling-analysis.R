@@ -16,7 +16,7 @@ phy <- read.tree("data/stein-et-al-single.tree")
 # combine phylogeny with dataset for use in pgls function
 cd <- comparative.data(phy, dat, names.col = "BinomName") 
 
-# Fit 18 pgls models 
+# Fit 24 pgls models 
 
 # intercept only
 zslope_0 <- pgls(log(rmax) ~ 1, data = cd, lambda = "ML") 
@@ -82,25 +82,55 @@ zslope_wt_invtemp_depth <- pgls(log(rmax) ~ log_wt + invtemp_scaled + depth_scal
 zslope_wt_invtemp_x_depth <- pgls(log(rmax) ~ log_wt  + invtemp_scaled * depth_scaled,
                                   data = cd, lambda = "ML")
 
-#  saving all 18 models in list
-capermodels <- list(zslope_0,
+# rmax varies with temp-depth index only
+zslope_PC1 <- pgls(log(rmax) ~ PC1, data = cd, lambda = "ML")
+
+# rmax varies with mass and temp-depth index
+zslope_wt_PC1 <- pgls(log(rmax) ~ log_wt + PC1,
+                      data = cd, lambda = "ML")
+
+# rmax varies with mass and temp-depth index, and the effect of mass scaling coefficient varies with temp-depth index
+zslope_wt_x_PC1 <- pgls(log(rmax) ~ log_wt * PC1,
+                        data = cd, lambda = "ML")
+
+# rmax varies with temp-depth index, and order
+zslope_PC1_o <- pgls(log(rmax) ~ PC1 + Order,
+                     data = cd, lambda = "ML")
+
+# rmax varies with mass, temp-depth index, and order
+zslope_wt_PC1_o <- pgls(log(rmax) ~ log_wt + PC1 + Order,
+                        data = cd, lambda = "ML")
+
+# rmax varies with mass, temp-depth index, and order
+zslope_wt_x_PC1_o <- pgls(log(rmax) ~ log_wt * PC1 + Order,
+                          data = cd, lambda = "ML")
+
+
+#  saving all 24 models in list
+capermodels <- list(zslope_0, 
                     zslope_wt, 
                     zslope_depth, 
-                    zslope_invtemp, 
+                    zslope_invtemp,
                     zslope_wt_depth,
                     zslope_wt_invtemp, 
                     zslope_wt_x_depth,
                     zslope_wt_x_invtemp, 
-                    zslope_2, 
+                    zslope_2,
                     zslope_wt_o, 
-                    zslope_depth_o, 
-                    zslope_temp_o, 
+                    zslope_depth_o,
+                    zslope_temp_o,
                     zslope_wt_depth_o,
                     zslope_wt_invtemp_o,
                     zslope_wt_x_depth_o,
                     zslope_wt_x_invtemp_o,
                     zslope_wt_invtemp_depth, 
-                    zslope_wt_invtemp_x_depth
+                    zslope_wt_invtemp_x_depth,
+                    zslope_PC1, 
+                    zslope_wt_PC1,
+                    zslope_wt_x_PC1,
+                    zslope_PC1_o,
+                    zslope_wt_PC1_o,
+                    zslope_wt_x_PC1_o
 ) 
 
 # manually extracting information from each model object
@@ -110,8 +140,7 @@ formulas <- sapply(capermodels,   # tidying formulas for easier reading
                    function (x) deparse(formula(x), width.cutoff = 90L)) %>%
   sub("^log\\(\\w+\\)\\s\\~\\s", "", .) %>% 
   gsub("_scaled", "", .) %>%
-  gsub("\\_wt", "(M)", .)  %>%
-  gsub("O", "o", .) # so order is a lower case
+  gsub("\\_wt", "(M)", .) 
 r2s <- sapply(capermodels, function (x) summary(x)$r.squared) 
 ar2s <- sapply(capermodels, function (x) summary(x)$adj.r.squared)
 LL <- sapply(capermodels, function (x) x$model$log.lik) 
