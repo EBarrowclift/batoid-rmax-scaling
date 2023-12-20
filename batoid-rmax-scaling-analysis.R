@@ -2,10 +2,7 @@
 library(ape) 
 library(caper)
 library(car)
-library(nlme)
 library(tidyverse)
-library(ggplot2)
-library(stringr)
 
 # load data------------------------------------------------------
 dat <- read.csv("data/batoid_model_data.csv", stringsAsFactors = FALSE,header = TRUE) # 83 species
